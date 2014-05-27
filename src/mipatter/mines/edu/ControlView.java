@@ -21,7 +21,7 @@ public class ControlView extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private static int SIZE_X = Board.calcMax();
 	private static int SIZE_Y = Board.calcMax() + 70;
-	private static int AI_DEPTH = 3;
+	private static int AI_DEPTH = 1;
 	private static String NEW_GAME_STR = "New Game?";
 	private static String SINGLE_MOVE_STR = "Single AI Move";
 	private static String PLAY_STR = "AI Play";
@@ -87,7 +87,9 @@ public class ControlView extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (board.makeMove(aiPlayer.chooseBestMove(board, AI_DEPTH))) {
+			// make a move if it's possible that is based on the AI class generating an expectiminmax tree
+			// multiply depth by 2 so that the passed in depth always satisfies (depth%2 == 0) which means player is next
+			if (board.makeMove(aiPlayer.chooseBestMove(board, AI_DEPTH*2))) {
 				board.addTile();
 				board.repaint();
 			}
