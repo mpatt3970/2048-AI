@@ -18,11 +18,11 @@ public class ControlView extends JFrame {
 	/**
 	 * 
 	 */
-	private static final long WAIT = 50;
+	private static final long WAIT = 500;
 	private static final long serialVersionUID = 1L;
 	private static int SIZE_X = Board.calcMax();
 	private static int SIZE_Y = Board.calcMax() + 70;
-	private static int AI_DEPTH = 100;
+	private static int AI_DEPTH = 2;
 	private static String NEW_GAME_STR = "New Game?";
 	private static String SINGLE_MOVE_STR = "Single AI Move";
 	private static String PLAY_STR = "AI Play";
@@ -167,7 +167,7 @@ public class ControlView extends JFrame {
 	private class PlayAiThread extends Thread {
 		public void run() {
 			Thread thisThread = Thread.currentThread();
-			while(aiRunning == thisThread) {
+			while(aiRunning == thisThread && !aiPlayer.terminalCondition(board)) {
 				try {
 					thisThread.sleep(WAIT); // not sure why this is unhappy
 				} catch (InterruptedException e) {

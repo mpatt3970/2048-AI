@@ -122,7 +122,7 @@ public class AI {
 		return availableCells*OPEN_TILE_WEIGHT + score;
 	}
 	
-	private boolean terminalCondition(Board board) {
+	public boolean terminalCondition(Board board) {
 		// try every move and return true if any makeMove function returns true
 		for (int i = 0; i < 4; ++i) {
 			Board tempBoard = new Board(board);
