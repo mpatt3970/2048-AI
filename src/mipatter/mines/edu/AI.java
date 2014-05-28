@@ -3,11 +3,25 @@ package mipatter.mines.edu;
 public class AI {
 
 	public int chooseBestMove(Board board, int depth) {
-		System.out.println(generateTree(board, depth));
-		return 0;
+		// constructs the first level of the expectiminmax tree before having generateTree do the rest
+		// necessary to get the preferred move out
+		int maxScore = -1;
+		int maxMove = 0;
+		for (int i = 0; i < 4; ++i) {
+			Board tempBoard = new Board(board);
+			if (tempBoard.makeMove(i)) {
+				int generatedScore = generateTree(tempBoard, depth - 1);
+				System.out.println("In chooseBestMove for move: " + i + ", score=" + generatedScore);
+				if (generatedScore > maxScore) {
+					maxMove = i;
+					maxScore = generatedScore;
+				}
+			}
+		}
+		return maxMove;
 	}
 	
-	public int generateTree(Board board, int depth) {
+	private int generateTree(Board board, int depth) {
 		// so this function recurses down, generating an expectiminmax tree
 		// if depth is 0 or the board is full, return the heuristic value of that node
 		if (depth == 0) {
@@ -51,7 +65,7 @@ public class AI {
 				score += tileValue;
 			}
 		}
-		return availableCells + score;
+		return availableCells*2 + score;
 	}
 	
 	private boolean terminalCondition(Board board) {

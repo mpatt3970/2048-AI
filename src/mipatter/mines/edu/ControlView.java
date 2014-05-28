@@ -18,22 +18,26 @@ public class ControlView extends JFrame {
 	/**
 	 * 
 	 */
+	private static final long WAIT = 1000;
 	private static final long serialVersionUID = 1L;
 	private static int SIZE_X = Board.calcMax();
 	private static int SIZE_Y = Board.calcMax() + 70;
-	private static int AI_DEPTH = 1;
+	private static int AI_DEPTH = 6;
 	private static String NEW_GAME_STR = "New Game?";
 	private static String SINGLE_MOVE_STR = "Single AI Move";
 	private static String PLAY_STR = "AI Play";
 	private static String PAUSE_STR = "Pause";
-	
+
 	private Board board;
 	private AI aiPlayer;
 	private JPanel buttonsPanel;
 	private JButton newGame;
 	private JButton singleMove;
 	private JToggleButton playPause;
+
+	private volatile Thread aiRunning;
 	
+
 
 	public ControlView(Board b) {
 		board = b;
@@ -61,16 +65,16 @@ public class ControlView extends JFrame {
 		this.add(buttonsPanel, BorderLayout.PAGE_END);
 		this.setSize(SIZE_X, SIZE_Y);
 		this.setVisible(true);
-		
+
 		// close when red button is clicked
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
-		    @Override
-		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        System.exit(0);
-		    }
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				System.exit(0);
+			}
 		});
 	}
-	
+
 	private class NewListener implements ActionListener {
 
 		@Override
@@ -80,45 +84,49 @@ public class ControlView extends JFrame {
 			board.repaint();
 			requestFocus();
 		}
-		
+
 	}
-	
+
 	private class AIListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// make a move if it's possible that is based on the AI class generating an expectiminmax tree
 			// multiply depth by 2 so that the passed in depth always satisfies (depth%2 == 0) which means player is next
-			if (board.makeMove(aiPlayer.chooseBestMove(board, AI_DEPTH*2))) {
+			int moveChoice = aiPlayer.chooseBestMove(board, AI_DEPTH*2);
+			System.out.println("Decided to move " + moveChoice);
+			if (board.makeMove(moveChoice)) {
 				board.addTile();
 				board.repaint();
 			}
 		}
-		
+
 	}
-	
+
 	private class PlayListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (playPause.isSelected()) {
 				// begin playing the ai version
-				
+				aiRunning = new PlayAiThread();
+				aiRunning.start();
 				playPause.setText(PAUSE_STR);
 			} else {
+				aiRunning = null;
 				playPause.setText(PLAY_STR);
-				
+
 			}
 			requestFocus();
 		}
-		
+
 	}
-	
+
 	private class MyKeyListener implements KeyListener {
 
 		@Override
 		public void keyTyped(KeyEvent e) {
-			
+
 		}
 
 		@Override
@@ -146,13 +154,35 @@ public class ControlView extends JFrame {
 
 		@Override
 		public void keyReleased(KeyEvent e) {
-			
+
 		}
 
-		
+
+
+	}
+	
+	public void runThread() {
 		
 	}
 	
-	
+	private class PlayAiThread extends Thread {
+		public void run() {
+			Thread thisThread = Thread.currentThread();
+			while(aiRunning == thisThread) {
+				try {
+					thisThread.sleep(WAIT);
+				} catch (InterruptedException e) {
+				}
+				int moveChoice = aiPlayer.chooseBestMove(board, AI_DEPTH*2);
+				System.out.println("Decided to move " + moveChoice);
+				if (board.makeMove(moveChoice)) {
+					board.addTile();
+					board.repaint();
+				}
+			}
+		}
+	}
+
+
 
 }
