@@ -1,6 +1,12 @@
 package mipatter.mines.edu;
 
 public class AI {
+	
+	//private static final int SMOOTH_WEIGHT = 5000;
+	private static final int EDGE_WEIGHT = 20000;
+	private static final int OPEN_TILE_WEIGHT = 20000;
+	private static final int[] MIDDLE_FOUR = {5,6,9,10}; // positions of middle three tiles
+	private static final int[] CORNER_VALUES = {0,3,12,15};
 
 	public int chooseBestMove(Board board, int depth) {
 		// constructs the first level of the expectiminmax tree before having generateTree do the rest
@@ -22,6 +28,7 @@ public class AI {
 	}
 	
 	private int generateTree(Board board, int depth) {
+		System.out.println("Depth is " + depth);
 		// so this function recurses down, generating an expectiminmax tree
 		// if depth is 0 or the board is full, return the heuristic value of that node
 		if (depth == 0) {
@@ -31,6 +38,7 @@ public class AI {
 			// this means its the player's turn to make a move
 			// check for a terminal state first
 			if (terminalCondition(board)) {
+				System.out.println("Terminal Condition reached");
 				return calcHeuristic(board);
 			}
 			// now generate a new node for each possible move and recurse down with that new board and (depth -1)
@@ -76,15 +84,42 @@ public class AI {
 	private int calcHeuristic(Board board) {
 		int availableCells = 0;
 		int score = 0;
+		int maxValue = -1;
+		int maxPosition = -1;
 		for (int i = 0; i < board.getBoardArray().length; ++i) {
 			int tileValue = board.getBoardArray()[i].getValue();
 			if (tileValue == 0) {
 				availableCells++;
 			} else {
+				if (tileValue > maxValue) {
+					maxValue = tileValue;
+					maxPosition = i;
+				}
 				score += tileValue;
 			}
 		}
-		return availableCells*2 + score;
+		// add value to score if maxPosition isn't in middle 4 tiles
+		boolean stuckInMiddle = false;
+		for (int badPosition : MIDDLE_FOUR) {
+			// sorted list so i can break early if maxPosition is < any of these
+			if (maxPosition == badPosition) {
+				stuckInMiddle = true;
+				break;
+			} else if (maxPosition < badPosition) {
+				break;
+			}
+		}
+		if (!stuckInMiddle) {
+			score += EDGE_WEIGHT;
+		}
+		// now check if we have maxPosition in a corner which is worth another EDGE_WEIGHT addition
+		for (int cornerPosition : CORNER_VALUES) {
+			if (maxPosition == cornerPosition) {
+				score += EDGE_WEIGHT;
+				break;
+			}
+		}
+		return availableCells*OPEN_TILE_WEIGHT + score;
 	}
 	
 	private boolean terminalCondition(Board board) {
@@ -92,9 +127,9 @@ public class AI {
 		for (int i = 0; i < 4; ++i) {
 			Board tempBoard = new Board(board);
 			if (tempBoard.makeMove(i)) {
-				return true;
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 }

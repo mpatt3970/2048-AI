@@ -22,7 +22,7 @@ public class ControlView extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private static int SIZE_X = Board.calcMax();
 	private static int SIZE_Y = Board.calcMax() + 70;
-	private static int AI_DEPTH = 20;
+	private static int AI_DEPTH = 100;
 	private static String NEW_GAME_STR = "New Game?";
 	private static String SINGLE_MOVE_STR = "Single AI Move";
 	private static String PLAY_STR = "AI Play";
