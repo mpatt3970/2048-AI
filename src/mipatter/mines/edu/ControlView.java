@@ -18,11 +18,11 @@ public class ControlView extends JFrame {
 	/**
 	 * 
 	 */
-	private static final long WAIT = 50-0;
+	private static final long WAIT = 50;
 	private static final long serialVersionUID = 1L;
 	private static int SIZE_X = Board.calcMax();
 	private static int SIZE_Y = Board.calcMax() + 70;
-	private static int AI_DEPTH = 6;
+	private static int AI_DEPTH = 20;
 	private static String NEW_GAME_STR = "New Game?";
 	private static String SINGLE_MOVE_STR = "Single AI Move";
 	private static String PLAY_STR = "AI Play";
@@ -164,20 +164,16 @@ public class ControlView extends JFrame {
 
 	}
 
-	public void runThread() {
-
-	}
-
 	private class PlayAiThread extends Thread {
 		public void run() {
 			Thread thisThread = Thread.currentThread();
 			while(aiRunning == thisThread) {
 				try {
-					thisThread.sleep(WAIT);
+					thisThread.sleep(WAIT); // not sure why this is unhappy
 				} catch (InterruptedException e) {
 				}
 				if (raceOverMoveMade) {
-					// create a lock here
+					// create a lock here to prevent choosing another move for the same board
 					raceOverMoveMade = false;
 					int moveChoice = aiPlayer.chooseBestMove(board, AI_DEPTH*2);
 					System.out.println("Decided to move " + moveChoice);
@@ -185,6 +181,7 @@ public class ControlView extends JFrame {
 						board.addTile();
 						board.repaint();
 					}
+					// free the lock
 					raceOverMoveMade = true;
 				}
 			}

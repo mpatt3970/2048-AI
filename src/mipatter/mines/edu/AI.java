@@ -50,7 +50,26 @@ public class AI {
 			// because the player must have moved somewhere, which leaves an empty tile somewhere
 			// equal chance of being placed in any open spot
 			// 90% chance new tile value equals 2
-			return generateTree(board, depth - 1); // for now skip adding a tile
+			
+			int result = 0;
+			int count = 0;
+			for (int i = 0; i < board.getBoardArray().length; ++i) {
+				// only access empty tiles
+				if (board.getBoardArray()[i].getValue() == 0) {
+					count++;
+					// add a 2 at this position
+					Board tempBoard = new Board(board);
+					// chance of a two being chosen
+					tempBoard.insertTile(i, 2);
+					result += 0.9*generateTree(tempBoard, depth - 1);
+					// add a 4 at this position
+					tempBoard = new Board(board);
+					tempBoard.insertTile(i, 4);
+					result += 0.1*generateTree(tempBoard, depth - 1);
+				}
+			}
+			// get the average of the results
+			return result/count;
 		}
 	}
 
