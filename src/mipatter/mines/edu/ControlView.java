@@ -18,7 +18,7 @@ public class ControlView extends JFrame {
 	/**
 	 * 
 	 */
-	private static final long WAIT = 1000;
+	private static final long WAIT = 50-0;
 	private static final long serialVersionUID = 1L;
 	private static int SIZE_X = Board.calcMax();
 	private static int SIZE_Y = Board.calcMax() + 70;
@@ -36,10 +36,13 @@ public class ControlView extends JFrame {
 	private JToggleButton playPause;
 
 	private volatile Thread aiRunning;
-	
+
+	private boolean raceOverMoveMade;
+
 
 
 	public ControlView(Board b) {
+		raceOverMoveMade = true;
 		board = b;
 		aiPlayer = new AI();
 		buttonsPanel = new JPanel();
@@ -160,11 +163,11 @@ public class ControlView extends JFrame {
 
 
 	}
-	
+
 	public void runThread() {
-		
+
 	}
-	
+
 	private class PlayAiThread extends Thread {
 		public void run() {
 			Thread thisThread = Thread.currentThread();
@@ -173,11 +176,16 @@ public class ControlView extends JFrame {
 					thisThread.sleep(WAIT);
 				} catch (InterruptedException e) {
 				}
-				int moveChoice = aiPlayer.chooseBestMove(board, AI_DEPTH*2);
-				System.out.println("Decided to move " + moveChoice);
-				if (board.makeMove(moveChoice)) {
-					board.addTile();
-					board.repaint();
+				if (raceOverMoveMade) {
+					// create a lock here
+					raceOverMoveMade = false;
+					int moveChoice = aiPlayer.chooseBestMove(board, AI_DEPTH*2);
+					System.out.println("Decided to move " + moveChoice);
+					if (board.makeMove(moveChoice)) {
+						board.addTile();
+						board.repaint();
+					}
+					raceOverMoveMade = true;
 				}
 			}
 		}
