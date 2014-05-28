@@ -5,6 +5,7 @@ public class AI {
 	//private static final int SMOOTH_WEIGHT = 5000;
 	private static final int EDGE_WEIGHT = 20000;
 	private static final int OPEN_TILE_WEIGHT = 20000;
+	private static final int LOSING_PENALTY = 50000;
 	private static final int[] MIDDLE_FOUR = {5,6,9,10}; // positions of middle three tiles
 	private static final int[] CORNER_VALUES = {0,3,12,15};
 
@@ -39,7 +40,7 @@ public class AI {
 			// check for a terminal state first
 			if (terminalCondition(board)) {
 				System.out.println("Terminal Condition reached");
-				return calcHeuristic(board);
+				return calcHeuristic(board) - LOSING_PENALTY;
 			}
 			// now generate a new node for each possible move and recurse down with that new board and (depth -1)
 			int maxScore = -1; // start with a value lower than any other move would equal
