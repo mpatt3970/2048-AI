@@ -2,11 +2,11 @@ package mipatter.mines.edu;
 
 public class AI {
 
-	private static final int SMOOTH_WEIGHT = 5000;
-	private static final int EDGE_WEIGHT = 20000;
-	private static final int SCORE_WEIGHT = 5000;
-	private static final int OPEN_TILE_WEIGHT = 20000;
-	private static final int LOSING_PENALTY = 5000;
+	private static final int SMOOTH_WEIGHT = 20;
+	private static final int EDGE_WEIGHT = 200;
+	private static final int SCORE_WEIGHT = 20;
+	private static final int OPEN_TILE_WEIGHT = 10000;
+	private static final int LOSING_PENALTY = 3000;
 	private static final int[] MIDDLE_FOUR = {5,6,9,10}; // positions of middle three tiles
 	private static final int[] CORNER_VALUES = {0,3,12,15};
 
@@ -45,7 +45,7 @@ public class AI {
 				return calcHeuristic(board) - LOSING_PENALTY;
 			}
 			// now generate a new node for each possible move and recurse down with that new board and (depth -1)
-			int maxScore = -1; // start with a value lower than any other move would equal
+			int maxScore = -1000000; // start with a value lower than any other move would equal
 			for (int i = 0; i < 4; i++) {
 				Board tempBoard = new Board(board);
 				if (tempBoard.makeMove(i)) {
@@ -119,7 +119,7 @@ public class AI {
 				break;
 			}
 		}
-		return availableCells*OPEN_TILE_WEIGHT + score + smoothnessCount*SMOOTH_WEIGHT;
+		return availableCells*OPEN_TILE_WEIGHT + score - smoothnessCount*SMOOTH_WEIGHT;
 	}
 	
 	private int calcSmoothness(int[] array, int index) {
@@ -127,69 +127,69 @@ public class AI {
 		int result = 0;
 		switch(index) {
 		case 0:
-			result += currentValue - array[1];
-			result += currentValue - array[4];
+			result += Math.abs(currentValue - array[1]);
+			result += Math.abs(currentValue - array[4]);
 		case 1:
-			result += currentValue - array[0];
-			result += currentValue - array[5];
-			result += currentValue - array[2];
+			result += Math.abs(currentValue - array[0]);
+			result += Math.abs(currentValue - array[5]);
+			result += Math.abs(currentValue - array[2]);
 		case 2:
-			result += currentValue - array[1];
-			result += currentValue - array[6];
-			result += currentValue - array[3];
+			result += Math.abs(currentValue - array[1]);
+			result += Math.abs(currentValue - array[6]);
+			result += Math.abs(currentValue - array[3]);
 		case 3:
-			result += currentValue - array[2];
-			result += currentValue - array[7];
+			result += Math.abs(currentValue - array[2]);
+			result += Math.abs(currentValue - array[7]);
 		case 4:
-			result += currentValue - array[0];
-			result += currentValue - array[5];
-			result += currentValue - array[8];
+			result += Math.abs(currentValue - array[0]);
+			result += Math.abs(currentValue - array[5]);
+			result += Math.abs(currentValue - array[8]);
 		case 5:
-			result += currentValue - array[1];
-			result += currentValue - array[4];
-			result += currentValue - array[6];
-			result += currentValue - array[9];
+			result += Math.abs(currentValue - array[1]);
+			result += Math.abs(currentValue - array[4]);
+			result += Math.abs(currentValue - array[6]);
+			result += Math.abs(currentValue - array[9]);
 		case 6:
-			result += currentValue - array[2];
-			result += currentValue - array[5];
-			result += currentValue - array[7];
-			result += currentValue - array[10];
+			result += Math.abs(currentValue - array[2]);
+			result += Math.abs(currentValue - array[5]);
+			result += Math.abs(currentValue - array[7]);
+			result += Math.abs(currentValue - array[10]);
 		case 7:
-			result += currentValue - array[3];
-			result += currentValue - array[6];
-			result += currentValue - array[11];
+			result += Math.abs(currentValue - array[3]);
+			result += Math.abs(currentValue - array[6]);
+			result += Math.abs(currentValue - array[11]);
 		case 8:
-			result += currentValue - array[4];
-			result += currentValue - array[9];
-			result += currentValue - array[12];
+			result += Math.abs(currentValue - array[4]);
+			result += Math.abs(currentValue - array[9]);
+			result += Math.abs(currentValue - array[12]);
 		case 9:
-			result += currentValue - array[5];
-			result += currentValue - array[8];
-			result += currentValue - array[10];
-			result += currentValue - array[13];
+			result += Math.abs(currentValue - array[5]);
+			result += Math.abs(currentValue - array[8]);
+			result += Math.abs(currentValue - array[10]);
+			result += Math.abs(currentValue - array[13]);
 		case 10:
-			result += currentValue - array[6];
-			result += currentValue - array[9];
-			result += currentValue - array[11];
-			result += currentValue - array[14];
+			result += Math.abs(currentValue - array[6]);
+			result += Math.abs(currentValue - array[9]);
+			result += Math.abs(currentValue - array[11]);
+			result += Math.abs(currentValue - array[14]);
 		case 11:
-			result += currentValue - array[7];
-			result += currentValue - array[10];
-			result += currentValue - array[15];
+			result += Math.abs(currentValue - array[7]);
+			result += Math.abs(currentValue - array[10]);
+			result += Math.abs(currentValue - array[15]);
 		case 12:
-			result += currentValue - array[8];
-			result += currentValue - array[13];
+			result += Math.abs(currentValue - array[8]);
+			result += Math.abs(currentValue - array[13]);
 		case 13:
-			result += currentValue - array[12];
-			result += currentValue - array[9];
-			result += currentValue - array[14];
+			result += Math.abs(currentValue - array[12]);
+			result += Math.abs(currentValue - array[9]);
+			result += Math.abs(currentValue - array[14]);
 		case 14:
-			result += currentValue - array[13];
-			result += currentValue - array[10];
-			result += currentValue - array[15];
+			result += Math.abs(currentValue - array[13]);
+			result += Math.abs(currentValue - array[10]);
+			result += Math.abs(currentValue - array[15]);
 		case 15:
-			result += currentValue - array[14];
-			result += currentValue - array[11];
+			result += Math.abs(currentValue - array[14]);
+			result += Math.abs(currentValue - array[11]);
 		}
 		return 0;
 	}
