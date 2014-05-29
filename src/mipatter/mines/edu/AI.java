@@ -4,12 +4,15 @@ public class AI {
 	
 	//private static final int SMOOTH_WEIGHT = 5000;
 	private static final int EDGE_WEIGHT = 20000;
+	private static final int SCORE_WEIGHT = 5000;
 	private static final int OPEN_TILE_WEIGHT = 20000;
-	private static final int LOSING_PENALTY = 50000;
+	private static final int LOSING_PENALTY = 5000;
 	private static final int[] MIDDLE_FOUR = {5,6,9,10}; // positions of middle three tiles
 	private static final int[] CORNER_VALUES = {0,3,12,15};
+	
+	private static final int INIT_DEPTH = 10;
 
-	public int chooseBestMove(Board board, int depth) {
+	public int chooseBestMove(Board board) {
 		// constructs the first level of the expectiminmax tree before having generateTree do the rest
 		// necessary to get the preferred move out
 		int maxScore = -1;
@@ -17,7 +20,7 @@ public class AI {
 		for (int i = 0; i < 4; ++i) {
 			Board tempBoard = new Board(board);
 			if (tempBoard.makeMove(i)) {
-				int generatedScore = generateTree(tempBoard, depth - 1);
+				int generatedScore = generateTree(tempBoard, INIT_DEPTH - 1);
 				System.out.println("In chooseBestMove for move: " + i + ", score=" + generatedScore);
 				if (generatedScore > maxScore) {
 					maxMove = i;
@@ -61,24 +64,25 @@ public class AI {
 			// 90% chance new tile value equals 2
 			
 			int result = 0;
-			int count = 0;
 			for (int i = 0; i < board.getBoardArray().length; ++i) {
 				// only access empty tiles
-				if (board.getBoardArray()[i].getValue() == 0) {
-					count++;
+				if (board.getBoardArray()[i] == 0) {
 					// add a 2 at this position
 					Board tempBoard = new Board(board);
 					// chance of a two being chosen
 					tempBoard.insertTile(i, 2);
-					result += 0.9*generateTree(tempBoard, depth - 1);
+					result += generateTree(tempBoard, depth - 1);
 					// add a 4 at this position
+					/*
+					dont consider fours to reduce number of nodes by half
 					tempBoard = new Board(board);
 					tempBoard.insertTile(i, 4);
 					result += 0.1*generateTree(tempBoard, depth - 1);
+					*/
 				}
 			}
 			// get the average of the results
-			return result/count;
+			return result;
 		}
 	}
 
@@ -88,7 +92,7 @@ public class AI {
 		int maxValue = -1;
 		int maxPosition = -1;
 		for (int i = 0; i < board.getBoardArray().length; ++i) {
-			int tileValue = board.getBoardArray()[i].getValue();
+			int tileValue = board.getBoardArray()[i];
 			if (tileValue == 0) {
 				availableCells++;
 			} else {
@@ -99,20 +103,16 @@ public class AI {
 				score += tileValue;
 			}
 		}
+		score = score*SCORE_WEIGHT;
 		// add value to score if maxPosition isn't in middle 4 tiles
-		boolean stuckInMiddle = false;
 		for (int badPosition : MIDDLE_FOUR) {
 			// sorted list so i can break early if maxPosition is < any of these
 			if (maxPosition == badPosition) {
-				stuckInMiddle = true;
-				break;
-			} else if (maxPosition < badPosition) {
+				score -= EDGE_WEIGHT;
 				break;
 			}
 		}
-		if (!stuckInMiddle) {
-			score += EDGE_WEIGHT;
-		}
+		score += EDGE_WEIGHT;
 		// now check if we have maxPosition in a corner which is worth another EDGE_WEIGHT addition
 		for (int cornerPosition : CORNER_VALUES) {
 			if (maxPosition == cornerPosition) {

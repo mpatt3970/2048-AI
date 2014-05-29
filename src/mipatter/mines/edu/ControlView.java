@@ -18,11 +18,9 @@ public class ControlView extends JFrame {
 	/**
 	 * 
 	 */
-	private static final long WAIT = 1000;
 	private static final long serialVersionUID = 1L;
 	private static int SIZE_X = Board.calcMax();
 	private static int SIZE_Y = Board.calcMax() + 70;
-	private static int AI_DEPTH = 3;
 	private static String NEW_GAME_STR = "New Game?";
 	private static String SINGLE_MOVE_STR = "Single AI Move";
 	private static String PLAY_STR = "AI Play";
@@ -37,12 +35,9 @@ public class ControlView extends JFrame {
 
 	private volatile Thread aiRunning;
 
-	private boolean raceOverMoveMade;
-
 
 
 	public ControlView(Board b) {
-		raceOverMoveMade = true;
 		board = b;
 		aiPlayer = new AI();
 		buttonsPanel = new JPanel();
@@ -96,7 +91,7 @@ public class ControlView extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			// make a move if it's possible that is based on the AI class generating an expectiminmax tree
 			// multiply depth by 2 so that the passed in depth always satisfies (depth%2 == 0) which means player is next
-			int moveChoice = aiPlayer.chooseBestMove(board, AI_DEPTH*2);
+			int moveChoice = aiPlayer.chooseBestMove(board);
 			System.out.println("Decided to move " + moveChoice);
 			if (board.makeMove(moveChoice)) {
 				board.addTile();
@@ -168,21 +163,11 @@ public class ControlView extends JFrame {
 		public void run() {
 			Thread thisThread = Thread.currentThread();
 			while(aiRunning == thisThread && !aiPlayer.terminalCondition(board)) {
-				try {
-					thisThread.sleep(WAIT); // not sure why this is unhappy
-				} catch (InterruptedException e) {
-				}
-				if (raceOverMoveMade) {
-					// create a lock here to prevent choosing another move for the same board
-					raceOverMoveMade = false;
-					int moveChoice = aiPlayer.chooseBestMove(board, AI_DEPTH*2);
-					System.out.println("Decided to move " + moveChoice);
-					if (board.makeMove(moveChoice)) {
-						board.addTile();
-						board.repaint();
-					}
-					// free the lock
-					raceOverMoveMade = true;
+				int moveChoice = aiPlayer.chooseBestMove(board);
+				System.out.println("Decided to move " + moveChoice);
+				if (board.makeMove(moveChoice)) {
+					board.addTile();
+					board.repaint();
 				}
 			}
 		}

@@ -47,48 +47,26 @@ public class Board extends JComponent {
 	public static int  calcMax() {
 		return TILE_SIZE*SIZE + BUFFER_SIZE*(1+SIZE);
 	}
-	private Tile[] boardArray;
+	private int[] boardArray;
 
 	public Board() {
-		boardArray = new Tile[SIZE*SIZE];
+		boardArray = new int[SIZE*SIZE];
 		fillEmpty();
 		initRand();
 		this.setSize(calcMax(), calcMax());
 	}
 	
 	public Board(Board b) {
-		boardArray = new Tile[b.getBoardArray().length];
+		boardArray = new int[b.getBoardArray().length];
 		for (int i = 0; i < b.getBoardArray().length; ++i) {
-			boardArray[i] = new Tile(b.getBoardArray()[i].getValue());
+			boardArray[i] = b.getBoardArray()[i];
 		}
 	}
-
-
 
 	public void fillEmpty() {
 		for (int i = 0; i < boardArray.length; i++) {
-			boardArray[i] = new Tile(0);
+			boardArray[i] = 0;
 		}
-	}
-
-	public void fillAll() {
-		// for testing tile appearances
-		boardArray[0] = new Tile(0);
-		boardArray[1] = new Tile(2);
-		boardArray[2] = new Tile(4);
-		boardArray[3] = new Tile(8);
-		boardArray[4] = new Tile(16);
-		boardArray[5] = new Tile(32);
-		boardArray[6] = new Tile(64);
-		boardArray[7] = new Tile(128);
-		boardArray[8] = new Tile(256);
-		boardArray[9] = new Tile(512);
-		boardArray[10] = new Tile(1024);
-		boardArray[11] = new Tile(2048);
-		boardArray[12] = new Tile(4096);
-		boardArray[13] = new Tile(8192);
-		boardArray[14] = new Tile(16384);
-		boardArray[15] = new Tile(-2);
 	}
 
 	public void initRand() {
@@ -103,27 +81,27 @@ public class Board extends JComponent {
 		Double place = (Math.random()*boardArray.length);
 		int placement = place.intValue();
 		// ensure this tile is empty
-		while (boardArray[placement].getValue() != 0) {
+		while (boardArray[placement] != 0) {
 			place = (Math.random()*boardArray.length);
 			placement = place.intValue();
 		}
 		if (twoNext()) {
-			boardArray[placement] = new Tile(2);
+			boardArray[placement] = 2;
 		} else {
-			boardArray[placement] = new Tile(4);
+			boardArray[placement] = 4;
 		}
 	}
 
 	public boolean makeMove(int direction) {
 		// save the state to see if the move has an effect
-		Tile[] originalArray = new Tile[16];
+		int[] originalArray = new int[16];
 		for (int i = 0; i < 16; i++) {
 			originalArray[i] = boardArray[i];
 		}
 		// get each row individually since they behave independently of each other
 		for (int i = 0; i < 4; i++) {
 			// construct the currentRow
-			Tile[] currentRow = buildRow(direction, i);
+			int[] currentRow = buildRow(direction, i);
 			// move the row towards the 0 index
 			currentRow = merge(currentRow);
 			currentRow = shift(currentRow);
@@ -138,8 +116,8 @@ public class Board extends JComponent {
 		}
 	}
 
-	public Tile[] buildRow(int direction, int index) {
-		Tile[] result = new Tile[4];
+	public int[] buildRow(int direction, int index) {
+		int[] result = new int[4];
 		// return an array of 4 Tiles
 		// represents the row/column with the tile being moved towards 0-indexed
 		switch(direction) {
@@ -175,8 +153,8 @@ public class Board extends JComponent {
 		return result;
 	}
 
-	public Tile[] merge(Tile[] row) {
-		Tile[] result = new Tile[4];
+	public int[] merge(int[] row) {
+		int[] result = new int[4];
 		// init this as an empty row
 		for (int i = 0; i < 4; i++) {
 			result[i] = row[i];
@@ -184,22 +162,22 @@ public class Board extends JComponent {
 		// perform merges first
 		// then place all tiles on the farthest side(i.e. as close to zero as possible)
 		// check values against immediately preceding values
-		int lastValue = row[0].getValue();
+		int lastValue = row[0];
 		int lastIndex = 0;
 		for (int i = 1; i < 4; ++i) {
-			int currentValue = row[i].getValue();
+			int currentValue = row[i];
 			if (currentValue != 0) {
 				if (lastValue == currentValue) {
 					// there's a match and it's not empty
 					// merge the two by creating a new tile of twice the value
-					result[lastIndex] = new Tile(lastValue*2);
-					result[i] = new Tile(0);
+					result[lastIndex] = lastValue*2;
+					result[i] = 0;
 					// set currentValue to 0 to prevent a third match
 					lastValue = 0;
 				} else {
 					// no match
 					// update result's value to reflect the values and keep checking
-					result[i] = new Tile(currentValue);
+					result[i] = currentValue;
 					lastValue = currentValue;
 					lastIndex = i;
 				}
@@ -208,30 +186,30 @@ public class Board extends JComponent {
 		return result;
 	}
 
-	public Tile[] shift(Tile[] row) {
+	public int[] shift(int[] row) {
 		// moves the row towards the 0-index tile
-		Tile[] result = new Tile[4];
+		int[] result = new int[4];
 
 		// now shift the result towards 0 until all empty tiles are removed
 		// and fill the backend with 0's
 		int amtToShift = 0;
 		for (int i = 0; i < 4; i++) {
-			if (row[i].getValue() == 0) {
+			if (row[i] == 0) {
 				// this one's empty, increase how far tiles are moving
-				result[i] = new Tile(0); // can be overwritten later
+				result[i] = 0; // can be overwritten later
 				amtToShift++;
 			} else {
 				// move this amtToShift towards 0
-				int currentValue = row[i].getValue();
-				result[i] = new Tile(0);
-				result[i - amtToShift] = new Tile(currentValue);
+				int currentValue = row[i];
+				result[i] = 0;
+				result[i - amtToShift] = currentValue;
 			}
 		}
 		// returns the result
 		return result;
 	}
 
-	public void updateBoardArray(Tile[] newRow, int direction, int index) {
+	public void updateBoardArray(int[] newRow, int direction, int index) {
 		// opposite of buildRow functionality for boardArray
 		// instead of getting the values at these specific indices
 		// replace the contents with the new row values stored at these same indices
@@ -267,19 +245,19 @@ public class Board extends JComponent {
 			break;
 		}
 	}
-	public boolean twoNext() {
+	private boolean twoNext() {
 		// determine if the next tile is a 2 or a 4
 		// Math.random() returns a value between 0 and 1
 		// this gives a 90 percent chance of returning true
 		return Math.random() < .9;
 	}
 
-	public boolean sameBoard(Tile[] a, Tile[] b) {
+	private boolean sameBoard(int[] a, int[] b) {
 		if (a.length != b.length) {
 			return false;
 		}
 		for (int i = 0; i < a.length; ++i) {
-			if (a[i].getValue() != b[i].getValue()) {
+			if (a[i] != b[i]) {
 				return false;
 			}
 		}
@@ -296,7 +274,7 @@ public class Board extends JComponent {
 				int index = i*4 + j;
 				int x_start = TILE_SIZE*j + BUFFER_SIZE*(j+1);
 				int y_start = TILE_SIZE*i + BUFFER_SIZE*(i+1);
-				int value = boardArray[index].getValue();
+				int value = boardArray[index];
 				boolean draw = true;
 				switch(value) {
 				case 0:
@@ -363,26 +341,13 @@ public class Board extends JComponent {
 			}
 		}
 	}
-
-	public void printTiles(Tile[] row) {
-		String result = "";
-		result += row[0].getValue();
-		for (int i = 1; i < row.length; ++i) {
-			result += ", " + row[i].getValue();
-		}
-		System.out.println(result);
-	}
 	
 	public void insertTile(int index, int value) {
-		boardArray[index] = new Tile(value);
+		boardArray[index] = value;
 	}
 
-	public Tile[] getBoardArray() {
+	public int[] getBoardArray() {
 		return boardArray;
-	}
-
-	public int getGridSize() {
-		return SIZE;
 	}
 
 }
