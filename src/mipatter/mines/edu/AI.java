@@ -15,7 +15,7 @@ public class AI {
 	public int chooseBestMove(Board board) {
 		// constructs the first level of the expectiminmax tree before having generateTree do the rest
 		// necessary to get the preferred move out
-		int maxScore = -1;
+		int maxScore = -10000000;
 		int maxMove = 0;
 		for (int i = 0; i < 4; ++i) {
 			Board tempBoard = new Board(board);
@@ -32,7 +32,6 @@ public class AI {
 	}
 	
 	private int generateTree(Board board, int depth) {
-		System.out.println("Depth is " + depth);
 		// so this function recurses down, generating an expectiminmax tree
 		// if depth is 0 or the board is full, return the heuristic value of that node
 		if (depth == 0) {
@@ -63,26 +62,22 @@ public class AI {
 			// equal chance of being placed in any open spot
 			// 90% chance new tile value equals 2
 			
-			int result = 0;
-			for (int i = 0; i < board.getBoardArray().length; ++i) {
+			int minScore = 10000000;
+			int limit = 4; // introduce a limit to prevent freezing the game when there are many options open
+			for (int i = 0; i < board.getBoardArray().length && limit > 0; ++i) {
 				// only access empty tiles
 				if (board.getBoardArray()[i] == 0) {
+					limit--;
 					// add a 2 at this position
 					Board tempBoard = new Board(board);
-					// chance of a two being chosen
 					tempBoard.insertTile(i, 2);
-					result += generateTree(tempBoard, depth - 1);
-					// add a 4 at this position
-					/*
-					dont consider fours to reduce number of nodes by half
-					tempBoard = new Board(board);
-					tempBoard.insertTile(i, 4);
-					result += 0.1*generateTree(tempBoard, depth - 1);
-					*/
+					int generatedScore = generateTree(tempBoard, depth - 1);
+					if (generatedScore < minScore) {
+						minScore = generatedScore;
+					}
 				}
 			}
-			// get the average of the results
-			return result;
+			return minScore;
 		}
 	}
 
