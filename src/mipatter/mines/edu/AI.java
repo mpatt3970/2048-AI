@@ -1,16 +1,16 @@
 package mipatter.mines.edu;
 
 public class AI {
-	
-	//private static final int SMOOTH_WEIGHT = 5000;
+
+	private static final int SMOOTH_WEIGHT = 5000;
 	private static final int EDGE_WEIGHT = 20000;
 	private static final int SCORE_WEIGHT = 5000;
 	private static final int OPEN_TILE_WEIGHT = 20000;
 	private static final int LOSING_PENALTY = 5000;
 	private static final int[] MIDDLE_FOUR = {5,6,9,10}; // positions of middle three tiles
 	private static final int[] CORNER_VALUES = {0,3,12,15};
-	
-	private static final int INIT_DEPTH = 10;
+
+	private static final int INIT_DEPTH = 8;
 
 	public int chooseBestMove(Board board) {
 		// constructs the first level of the expectiminmax tree before having generateTree do the rest
@@ -30,7 +30,7 @@ public class AI {
 		}
 		return maxMove;
 	}
-	
+
 	private int generateTree(Board board, int depth) {
 		// so this function recurses down, generating an expectiminmax tree
 		// if depth is 0 or the board is full, return the heuristic value of that node
@@ -61,14 +61,16 @@ public class AI {
 			// because the player must have moved somewhere, which leaves an empty tile somewhere
 			// equal chance of being placed in any open spot
 			// 90% chance new tile value equals 2
-			
+
+			// if there are more than 5 possible open places, only consider adding a new tile to empty corners
+			// if all corners are full, then that will never happen except when the game is over
 			int minScore = 10000000;
-			int limit = 4; // introduce a limit to prevent freezing the game when there are many options open
-			for (int i = 0; i < board.getBoardArray().length && limit > 0; ++i) {
-				// only access empty tiles
+			int limit = 5; // introduce a limit to prevent freezing the game when there are many options open
+			int openCount = 0;
+			for (int i = 0; i < board.getBoardArray().length && openCount < limit; ++i) {
+				// only count empty tiles
 				if (board.getBoardArray()[i] == 0) {
-					limit--;
-					// add a 2 at this position
+					openCount++;
 					Board tempBoard = new Board(board);
 					tempBoard.insertTile(i, 2);
 					int generatedScore = generateTree(tempBoard, depth - 1);
@@ -82,12 +84,14 @@ public class AI {
 	}
 
 	private int calcHeuristic(Board board) {
+		int smoothnessCount = 0; // a count of the difference between every tile and its neighbors
 		int availableCells = 0;
 		int score = 0;
 		int maxValue = -1;
 		int maxPosition = -1;
 		for (int i = 0; i < board.getBoardArray().length; ++i) {
 			int tileValue = board.getBoardArray()[i];
+			smoothnessCount += calcSmoothness(board.getBoardArray(), i);
 			if (tileValue == 0) {
 				availableCells++;
 			} else {
@@ -115,9 +119,81 @@ public class AI {
 				break;
 			}
 		}
-		return availableCells*OPEN_TILE_WEIGHT + score;
+		return availableCells*OPEN_TILE_WEIGHT + score + smoothnessCount*SMOOTH_WEIGHT;
 	}
 	
+	private int calcSmoothness(int[] array, int index) {
+		int currentValue = array[index];
+		int result = 0;
+		switch(index) {
+		case 0:
+			result += currentValue - array[1];
+			result += currentValue - array[4];
+		case 1:
+			result += currentValue - array[0];
+			result += currentValue - array[5];
+			result += currentValue - array[2];
+		case 2:
+			result += currentValue - array[1];
+			result += currentValue - array[6];
+			result += currentValue - array[3];
+		case 3:
+			result += currentValue - array[2];
+			result += currentValue - array[7];
+		case 4:
+			result += currentValue - array[0];
+			result += currentValue - array[5];
+			result += currentValue - array[8];
+		case 5:
+			result += currentValue - array[1];
+			result += currentValue - array[4];
+			result += currentValue - array[6];
+			result += currentValue - array[9];
+		case 6:
+			result += currentValue - array[2];
+			result += currentValue - array[5];
+			result += currentValue - array[7];
+			result += currentValue - array[10];
+		case 7:
+			result += currentValue - array[3];
+			result += currentValue - array[6];
+			result += currentValue - array[11];
+		case 8:
+			result += currentValue - array[4];
+			result += currentValue - array[9];
+			result += currentValue - array[12];
+		case 9:
+			result += currentValue - array[5];
+			result += currentValue - array[8];
+			result += currentValue - array[10];
+			result += currentValue - array[13];
+		case 10:
+			result += currentValue - array[6];
+			result += currentValue - array[9];
+			result += currentValue - array[11];
+			result += currentValue - array[14];
+		case 11:
+			result += currentValue - array[7];
+			result += currentValue - array[10];
+			result += currentValue - array[15];
+		case 12:
+			result += currentValue - array[8];
+			result += currentValue - array[13];
+		case 13:
+			result += currentValue - array[12];
+			result += currentValue - array[9];
+			result += currentValue - array[14];
+		case 14:
+			result += currentValue - array[13];
+			result += currentValue - array[10];
+			result += currentValue - array[15];
+		case 15:
+			result += currentValue - array[14];
+			result += currentValue - array[11];
+		}
+		return 0;
+	}
+
 	public boolean terminalCondition(Board board) {
 		// try every move and return true if any makeMove function returns true
 		for (int i = 0; i < 4; ++i) {
