@@ -6,8 +6,8 @@ public class AI {
 
 	private static final int SMOOTH_WEIGHT = 1;
 	private static final int EDGE_WEIGHT = 50;
-	private static final int CORNER_WEIGHT = 10;
-	private static final int SCORE_WEIGHT = 5;
+	private static final int CORNER_WEIGHT = 100;
+	private static final int SCORE_WEIGHT = 50;
 	private static final int OPEN_TILE_WEIGHT = 1000;
 	private static final int LOSING_PENALTY = 3000;
 	private static final int[] MIDDLE_FOUR = {5,6,9,10}; // positions of middle three tiles
@@ -31,10 +31,8 @@ public class AI {
 			Board tempBoard = new Board(board);
 			if (tempBoard.makeMove(i)) {
 				int depth = 8;
-				if (openCount > 3) {
+				if (openCount > 4) {
 					depth = 6;
-				} if (openCount > 6) {
-					depth = 4;
 				}
 				int generatedScore = generateTree(tempBoard, depth);
 				System.out.println("In chooseBestMove for move: " + i + ", score=" + generatedScore);
@@ -82,6 +80,7 @@ public class AI {
 			// because the player must have moved somewhere, which leaves an empty tile somewhere
 			// equal chance of being placed in any open spot
 			// 90% chance new tile value equals 2
+			int minScore = 10000000;
 			int openCount = 0;
 			int score = 0;
 			for (int i = 0; i < boardArray.length; ++i) {
@@ -90,10 +89,15 @@ public class AI {
 					openCount++;
 					Board tempBoard = new Board(board);
 					tempBoard.insertTile(i, 2);
-					score += generateTree(tempBoard, depth - 1);
+					int generatedScore = generateTree(tempBoard, depth - 1);
+					if (generatedScore < minScore) {
+						minScore = generatedScore;
+					}
+					score += generatedScore;
 				}
 			}
-			int result = score/openCount;
+			// average the resulting scores and average that with the minScore
+			int result = (score/openCount + minScore)/2;
 			transposition.put(boardArray, result);
 			return result;
 		}
@@ -105,7 +109,6 @@ public class AI {
 		int availableCells = 0;
 		int score = 0;
 		int maxValue = -1;
-		int secondMaxValue = -1;
 		int maxPosition = -1;
 		int secondMaxPosition = -1;
 		for (int i = 0; i < boardArray.length; ++i) {
@@ -115,7 +118,6 @@ public class AI {
 				availableCells++;
 			} else {
 				if (tileValue > maxValue) {
-					secondMaxValue = maxValue;
 					maxValue = tileValue;
 					secondMaxPosition = maxPosition;
 					maxPosition = i;
@@ -129,19 +131,23 @@ public class AI {
 			// sorted list so i can break early if maxPosition is < any of these
 			if (maxPosition == badPosition) {
 				score -= EDGE_WEIGHT;
+				//System.out.println("max in middle");
 			}
 			if (secondMaxPosition == badPosition) {
 				score -= 0.5*EDGE_WEIGHT;
+				//System.out.println("max in middle");
 			}
 		}
 		score = score * EDGE_WEIGHT;
-		// now check if we have maxPosition in a corner which is worth another EDGE_WEIGHT addition
+		// now check if we have maxPosition in a corner which is worth a large multiplier
 		for (int cornerPosition : CORNER_VALUES) {
 			if (maxPosition == cornerPosition) {
-				score += EDGE_WEIGHT;
+				score += CORNER_WEIGHT;
+				//System.out.println("max in corner");
 				break;
 			}
 		}
+		//System.out.println("AvailableCells: " + availableCells + ", score: " + score + ", smooth: " + smoothnessCount);
 		return availableCells*OPEN_TILE_WEIGHT + score - smoothnessCount*SMOOTH_WEIGHT;
 	}
 	
