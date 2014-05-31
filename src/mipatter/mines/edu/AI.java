@@ -7,8 +7,9 @@ public class AI {
 	private static final int SMOOTH_WEIGHT = 1;
 	private static final int EDGE_WEIGHT = 50;
 	private static final int CORNER_WEIGHT = 100;
-	private static final int SCORE_WEIGHT = 50;
+	private static final int SCORE_WEIGHT = 100;
 	private static final int OPEN_TILE_WEIGHT = 1000;
+	private static final int MIN_SCORE_WEIGHT = 3;
 	private static final int LOSING_PENALTY = 3000;
 	private static final int[] MIDDLE_FOUR = {5,6,9,10}; // positions of middle three tiles
 	private static final int[] CORNER_VALUES = {0,3,12,15};
@@ -96,8 +97,8 @@ public class AI {
 					score += generatedScore;
 				}
 			}
-			// average the resulting scores and average that with the minScore
-			int result = (score/openCount + minScore)/2;
+			// average the resulting scores and average that with the minScore, MIN_SCORE_WEIGHT + 1 equals total number of scores being averaged
+			int result = (score/openCount + MIN_SCORE_WEIGHT*minScore)/(MIN_SCORE_WEIGHT + 1);
 			transposition.put(boardArray, result);
 			return result;
 		}
@@ -125,7 +126,6 @@ public class AI {
 				score += tileValue;
 			}
 		}
-		score = score*SCORE_WEIGHT;
 		// add value to score if maxPosition isn't in middle 4 tiles
 		for (int badPosition : MIDDLE_FOUR) {
 			// sorted list so i can break early if maxPosition is < any of these
@@ -138,7 +138,6 @@ public class AI {
 				//System.out.println("max in middle");
 			}
 		}
-		score = score * EDGE_WEIGHT;
 		// now check if we have maxPosition in a corner which is worth a large multiplier
 		for (int cornerPosition : CORNER_VALUES) {
 			if (maxPosition == cornerPosition) {
@@ -147,6 +146,7 @@ public class AI {
 				break;
 			}
 		}
+		score = score*SCORE_WEIGHT;
 		//System.out.println("AvailableCells: " + availableCells + ", score: " + score + ", smooth: " + smoothnessCount);
 		return availableCells*OPEN_TILE_WEIGHT + score - smoothnessCount*SMOOTH_WEIGHT;
 	}
